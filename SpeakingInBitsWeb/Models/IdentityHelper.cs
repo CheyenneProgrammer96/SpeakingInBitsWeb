@@ -1,4 +1,5 @@
 ﻿using Microsoft.AspNetCore.Identity;
+using System.Security.Cryptography.X509Certificates;
 
 namespace SpeakingInBitsWeb.Models
 {
@@ -20,6 +21,26 @@ namespace SpeakingInBitsWeb.Models
                 {
                     await roleManager.CreateAsync(new IdentityRole(role));
                 }
+            }
+        }
+
+        public static async Task CreateDefaultUser(IServiceProvider provider, string role)
+        {
+            var userManager = provider.GetService<UserManager<IdentityUser>>();
+
+            // If no users are present, make the default user
+            int numUsers = (await userManager.GetUsersInRoleAsync(role)).Count;
+            if (numUsers == 0) // If no users are in the specified role
+            {
+                var defaultUser = new IdentityUser(role)
+                {
+                    Email = "instructor@speakinginbits.com",
+                    UserName = "Admin"
+                };
+
+                await userManager.CreateAsync(defaultUser, "Programming01#");
+
+                await userManager.AddToRoleAsync(defaultUser, role);
             }
         }
     }
